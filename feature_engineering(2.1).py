@@ -62,7 +62,7 @@ df.columns = ['card_id'] + cols[1:]
 
 # 生成训练集与测试集
 train = pd.merge(train, df, how='left', on='card_id')
-test =  pd.merge(test, df, how='left', on='card_id')
+test = pd.merge(test, df, how='left', on='card_id')
 del df
 train.to_csv("preprocess/train_dict.csv", index=False)
 test.to_csv("preprocess/test_dict.csv", index=False)

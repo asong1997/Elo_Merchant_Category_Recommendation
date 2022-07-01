@@ -1,4 +1,5 @@
 import pandas as pd
+
 # 数据读取
 train_dict = pd.read_csv("preprocess/train_dict.csv")
 test_dict = pd.read_csv("preprocess/test_dict.csv")
@@ -7,10 +8,10 @@ test_groupby = pd.read_csv("preprocess/test_groupby.csv")
 
 # 剔除重复列
 for co in train_dict.columns:
-    if co in train_groupby.columns and co!='card_id':
+    if co in train_groupby.columns and co != 'card_id':
         del train_groupby[co]
 for co in test_dict.columns:
-    if co in test_groupby.columns and co!='card_id':
+    if co in test_groupby.columns and co != 'card_id':
         del test_groupby[co]
 
 # 特征拼接

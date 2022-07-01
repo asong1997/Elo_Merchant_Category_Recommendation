@@ -7,12 +7,11 @@ from sklearn.metrics import mean_squared_error
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 
+
 train = pd.read_csv("preprocess/train.csv")
 test = pd.read_csv("preprocess/test.csv")
 
-
-
- # 提取特征名称
+# 提取特征名称
 features = train.columns.tolist()
 features.remove("card_id")
 features.remove("target")

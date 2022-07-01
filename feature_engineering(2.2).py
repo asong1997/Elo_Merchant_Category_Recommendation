@@ -56,4 +56,4 @@ del df
 train.to_csv("preprocess/train_groupby.csv", index=False)
 test.to_csv("preprocess/test_groupby.csv", index=False)
 
-gc.collect()
+
