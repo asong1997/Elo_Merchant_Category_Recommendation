@@ -87,6 +87,7 @@ LightGBM_XGBoost_CatBoost_Stacking(5.4).py：用优化后的特征，分别跑li
 推荐使用贝叶斯优化，相对来说又快又准。
 
 4.常用的特征衍生方法：
+
 ![image](image_output/feature engineering.png)
 
 
