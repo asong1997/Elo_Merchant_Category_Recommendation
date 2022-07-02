@@ -1,18 +1,19 @@
-import numpy as np
 import pandas as pd
+import numpy as np
 from sklearn.linear_model import BayesianRidge
-
-oof_rf = pd.read_csv('./preprocess/train_randomforest.csv')
-predictions_rf = pd.read_csv('./preprocess/test_randomforest.csv')
-
-oof_lgb = pd.read_csv('./preprocess/train_lightgbm.csv')
-predictions_lgb = pd.read_csv('./preprocess/test_lightgbm.csv')
-
-oof_xgb = pd.read_csv('./preprocess/train_xgboost.csv')
-predictions_xgb = pd.read_csv('./preprocess/test_xgboost.csv')
+from sklearn.metrics import mean_squared_error
 
 
-def stack_model(oof_1, oof_2, oof_3, predictions_1, predictions_2, predictions_3, y):
+predictions_lgb = pd.read_csv("result/")
+predictions_xgb = pd.read_csv("result/")
+predictions_cat = pd.read_csv("result/")
+
+sub_df = pd.read_csv('data/sample_submission.csv')
+sub_df["target"] = (predictions_lgb + predictions_xgb.values.flatten() + predictions_cat.values.flatten()) / 3
+sub_df.to_csv('predictions_wei_average.csv', index=False)
+
+
+def stack_model(oof_1, oof_2, oof_3, predictions_1, predictions_2, predictions_3, y, eval_type='regression'):
     # Part 1.数据准备
     # 按行拼接列，拼接验证集所有预测结果
     # train_stack就是final model的训练数据
@@ -21,7 +22,7 @@ def stack_model(oof_1, oof_2, oof_3, predictions_1, predictions_2, predictions_3
     # test_stack就是final model的测试数据
     test_stack = np.hstack([predictions_1, predictions_2, predictions_3])
     # 创建一个和验证集行数相同的全零数组
-    # oof = np.zeros(train_stack.shape[0])
+    oof = np.zeros(train_stack.shape[0])
     # 创建一个和测试集行数相同的全零数组
     predictions = np.zeros(test_stack.shape[0])
 
@@ -48,15 +49,35 @@ def stack_model(oof_1, oof_2, oof_3, predictions_1, predictions_2, predictions_3
         # 对测试集数据进行预测，每一轮预测结果占比额外的1/10
         predictions += clf.predict(test_stack) / (5 * 2)
 
+    if eval_type == 'regression':
+        print('mean: ', np.sqrt(mean_squared_error(y, oof)))
+    if eval_type == 'binary':
+        print('mean: ', log_loss(y, oof))
+
     # 返回测试集的预测结果
-    return predictions
+    return oof, predictions
 
+print('='*30)
+oof_stack , predictions_stack  = stack_model(oof_lgb , oof_xgb , oof_cat , predictions_lgb , predictions_xgb , predictions_cat , target)
+print('='*30)
+oof_nstack, predictions_nstack = stack_model(oof_nlgb, oof_nxgb, oof_ncat, predictions_nlgb, predictions_nxgb, predictions_ncat, ntarget)
+print('='*30)
+oof_bstack, predictions_bstack = stack_model(oof_blgb, oof_bxgb, oof_bcat, predictions_blgb, predictions_bxgb, predictions_bcat, target_binary, eval_type='binary')
 
-train = pd.read_csv('preprocess/train.csv')
-target = train['target'].values
-predictions_stack = stack_model(oof_rf, oof_lgb, oof_xgb, predictions_rf, predictions_lgb, predictions_xgb, target)
-
-print(predictions_stack)
 sub_df = pd.read_csv('data/sample_submission.csv')
 sub_df["target"] = predictions_stack
-sub_df.to_csv('result/predictions_stack1.csv', index=False)
+sub_df.to_csv('predictions_stack.csv', index=False)
+
+
+"""
+LightGBM+XGBoost+CatBoost加上stacking模型融合 + 加上二阶段建模
+"""
+
+
+sub_df = pd.read_csv('data/sample_submission.csv')
+sub_df["target"] = predictions_bstack*-33.219281 + (1-predictions_bstack)*predictions_nstack
+sub_df.to_csv('predictions_trick.csv', index=False)
+
+sub_df = pd.read_csv('data/sample_submission.csv')
+sub_df["target"] = (predictions_bstack*-33.219281 + (1-predictions_bstack)*predictions_nstack)*0.5 + predictions_stack*0.5
+sub_df.to_csv('predictions_trick&stacking.csv', index=False)

@@ -162,6 +162,8 @@ def get_expand_common(df_):
 
     return df
 
+historical_transactions = get_expand_common(historical_transactions)
+new_transactions = get_expand_common(new_transactions)
 
 # 构造基本统计特征
 def aggregate_transactions(df_, prefix):
@@ -202,7 +204,7 @@ def aggregate_transactions(df_, prefix):
         df[col + '_mean'] = df.groupby([col])['purchase_amount'].transform('mean')
         agg_func[col + '_mean'] = ['mean']
 
-    agg_df = df.groupby(['card_id']).agg(agg_func)
+    agg_df = df.groupby(['card_id']).agg(agg_func) # KeyError: "Column(s) ['dayofweek', 'hour', 'month', 'weekend', 'weekofyear', 'year'] do not exist"
     agg_df.columns = [prefix + '_'.join(col).strip() for col in agg_df.columns.values]
     agg_df.reset_index(drop=False, inplace=True)
 
@@ -532,11 +534,11 @@ def successive_aggregates(df_, prefix='levelAB_'):
 
     level12_nunique = [('month_lag', 'state_id'), ('month_lag', 'city_id'), ('month_lag', 'subsector_id'),
                        ('month_lag', 'merchant_category_id'), ('month_lag', 'merchant_id'),
-                       ('month_lag', 'purchase_date_floorday'), \
+                       ('month_lag', 'purchase_date_floorday'),
                        ('subsector_id', 'merchant_category_id'), ('subsector_id', 'merchant_id'),
-                       ('subsector_id', 'purchase_date_floorday'), ('subsector_id', 'month_lag'), \
+                       ('subsector_id', 'purchase_date_floorday'), ('subsector_id', 'month_lag'),
                        ('merchant_category_id', 'merchant_id'), ('merchant_category_id', 'purchase_date_floorday'),
-                       ('merchant_category_id', 'month_lag'), \
+                       ('merchant_category_id', 'month_lag'),
                        ('purchase_date_floorday', 'merchant_id'), ('purchase_date_floorday', 'merchant_category_id'),
                        ('purchase_date_floorday', 'subsector_id')]
     for col_level1, col_level2 in tqdm_notebook(level12_nunique):
@@ -564,7 +566,7 @@ def successive_aggregates(df_, prefix='levelAB_'):
         cardid_features = cardid_features.merge(level2, on='card_id', how='left')
 
     level12_meansum = [('month_lag', 'purchase_amount'), ('state_id', 'purchase_amount'),
-                       ('city_id', 'purchase_amount'), ('subsector_id', 'purchase_amount'), \
+                       ('city_id', 'purchase_amount'), ('subsector_id', 'purchase_amount'),
                        ('merchant_category_id', 'purchase_amount'), ('merchant_id', 'purchase_amount'),
                        ('purchase_date_floorday', 'purchase_amount')]
     for col_level1, col_level2 in tqdm_notebook(level12_meansum):
@@ -710,30 +712,4 @@ test = test[fea_cols]
 train.to_csv('./data/all_train_features.csv', index=False)
 test.to_csv('./data/all_test_features.csv', index=False)
 
-train = pd.read_csv('./data/all_train_features.csv')
-test = pd.read_csv('./data/all_test_features.csv')
 
-inf_cols = ['new_cardf_card_id_cnt_divide_installments_nunique', 'hist_last2_card_id_cnt_divide_installments_nunique']
-train[inf_cols] = train[inf_cols].replace(np.inf, train[inf_cols].replace(np.inf, -99).max().max())
-# ntrain[inf_cols] = ntrain[inf_cols].replace(np.inf, ntrain[inf_cols].replace(np.inf, -99).max().max())
-test[inf_cols] = test[inf_cols].replace(np.inf, test[inf_cols].replace(np.inf, -99).max().max())
-
-# ## load sparse
-# train_tags = sparse.load_npz('train_tags.npz')
-# test_tags  = sparse.load_npz('test_tags.npz')
-
-## 获取非异常值的index
-normal_index = train[train['outliers'] == 0].index.tolist()
-## without outliers
-ntrain = train[train['outliers'] == 0]
-
-target = train['target'].values
-ntarget = ntrain['target'].values
-target_binary = train['outliers'].values
-###
-y_train = target
-y_ntrain = ntarget
-y_train_binary = target_binary
-
-print('train:', train.shape)
-print('ntrain:', ntrain.shape)
