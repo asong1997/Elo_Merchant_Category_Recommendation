@@ -88,7 +88,7 @@ LightGBM_XGBoost_CatBoost_Stacking(5.4).py：用优化后的特征，分别跑li
 
 4.常用的特征衍生方法：
 
-![image](image_output/feature engineering.png)
+![image](image_output/feature_engineering.png)
 
 
 
