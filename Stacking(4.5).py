@@ -1,20 +1,15 @@
 import numpy as np
 import pandas as pd
-import lightgbm as lgb
-from sklearn.model_selection import KFold
-from hyperopt import hp, fmin, tpe
-from numpy.random import RandomState
-from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import BayesianRidge
 
-oof_rf  = pd.read_csv('./preprocess/train_randomforest.csv')
-predictions_rf  = pd.read_csv('./preprocess/test_randomforest.csv')
+oof_rf = pd.read_csv('./preprocess/train_randomforest.csv')
+predictions_rf = pd.read_csv('./preprocess/test_randomforest.csv')
 
-oof_lgb  = pd.read_csv('./preprocess/train_lightgbm.csv')
-predictions_lgb  = pd.read_csv('./preprocess/test_lightgbm.csv')
+oof_lgb = pd.read_csv('./preprocess/train_lightgbm.csv')
+predictions_lgb = pd.read_csv('./preprocess/test_lightgbm.csv')
 
-oof_xgb  = pd.read_csv('./preprocess/train_xgboost.csv')
-predictions_xgb  = pd.read_csv('./preprocess/test_xgboost.csv')
+oof_xgb = pd.read_csv('./preprocess/train_xgboost.csv')
+predictions_xgb = pd.read_csv('./preprocess/test_xgboost.csv')
 
 
 def stack_model(oof_1, oof_2, oof_3, predictions_1, predictions_2, predictions_3, y):
@@ -59,7 +54,7 @@ def stack_model(oof_1, oof_2, oof_3, predictions_1, predictions_2, predictions_3
 
 train = pd.read_csv('preprocess/train.csv')
 target = train['target'].values
-predictions_stack  = stack_model(oof_rf, oof_lgb, oof_xgb, predictions_rf, predictions_lgb, predictions_xgb, target)
+predictions_stack = stack_model(oof_rf, oof_lgb, oof_xgb, predictions_rf, predictions_lgb, predictions_xgb, target)
 
 print(predictions_stack)
 sub_df = pd.read_csv('data/sample_submission.csv')

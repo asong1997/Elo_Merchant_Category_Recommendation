@@ -1,6 +1,9 @@
-import os
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import KFold
+from sklearn.metrics import mean_squared_error
 
 train = pd.read_csv('preprocess/train.csv')
 test = pd.read_csv('preprocess/test.csv')
@@ -53,11 +56,6 @@ def feature_select_pearson(train, test):
     feature_select = ['card_id'] + se[:300].index.tolist()
     print('done')
     return train[feature_select + ['target']], test[feature_select]
-
-
-from sklearn.metrics import mean_squared_error
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import GridSearchCV
 
 
 def param_grid_search(train):
@@ -116,9 +114,7 @@ test[['card_id', 'target']].to_csv("result/submission_randomforest.csv", index=F
 """
 随机森林交叉验证评估与中间结果保存
 """
-from sklearn.model_selection import KFold
-from numpy.random import RandomState
-from sklearn.metrics import mean_squared_error
+
 
 def train_predict(train, test, best_clf):
     """
@@ -174,5 +170,6 @@ def train_predict(train, test, best_clf):
     # 将测试集id和标签组成新的DataFrame并写入本地文件，该文件就是后续提交结果
     test[['card_id', 'target']].to_csv("result/submission_randomforest.csv", index=False)
     return
+
 
 train_predict(train_RF, test_RF, grid.best_estimator_)

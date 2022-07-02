@@ -1,17 +1,9 @@
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder
-from scipy import sparse
 import numpy as np
 import pandas as pd
-import gc
-import lightgbm as lgb
-from sklearn.model_selection import KFold
-from hyperopt import hp, fmin, tpe
-from numpy.random import RandomState
-from sklearn.metrics import mean_squared_error
 import xgboost as xgb
-from sklearn.feature_selection import f_regression
-from numpy.random import RandomState
+from scipy import sparse
+from sklearn.model_selection import KFold
+from sklearn.metrics import mean_squared_error
 from bayes_opt import BayesianOptimization
 
 # pip install bayesian-optimization
@@ -47,7 +39,6 @@ def params_append(params):
 # 模型优化函数
 def param_beyesian(train):
     """
-
     :param train:
     :return:
     """
@@ -55,15 +46,13 @@ def param_beyesian(train):
     train_y = pd.read_csv("data/train.csv")['target']
     # 数据封装
     sample_index = train_y.sample(frac=0.1, random_state=2020).index.tolist()
-    train_data = xgb.DMatrix(train.tocsr()[sample_index, :
-                             ], train_y.loc[sample_index].values, silent=True)
+    train_data = xgb.DMatrix(train.tocsr()[sample_index, :], train_y.loc[sample_index].values, silent=True)
 
     # 借助cv过程构建目标函数
     def xgb_cv(colsample_bytree, subsample, min_child_weight, max_depth,
                reg_alpha, eta,
                reg_lambda):
         """
-
         :param colsample_bytree:
         :param subsample:
         :param min_child_weight:

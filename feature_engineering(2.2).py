@@ -2,10 +2,8 @@
 业务统计特征创建
 """
 import gc
-import time
-import numpy as np
 import pandas as pd
-from datetime import datetime
+
 
 train = pd.read_csv('preprocess/train_pre.csv')
 test = pd.read_csv('preprocess/test_pre.csv')

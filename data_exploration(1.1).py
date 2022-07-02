@@ -1,11 +1,7 @@
 """
 训练测试数据预处理
 """
-import gc
-import time
-import numpy as np
 import pandas as pd
-from datetime import datetime
 
 train = pd.read_csv('data/train.csv')
 test = pd.read_csv('data/test.csv')

@@ -1,26 +1,3 @@
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder
-from scipy import sparse
-import numpy as np
-import pandas as pd
-import gc
-import lightgbm as lgb
-from sklearn.model_selection import KFold
-from hyperopt import hp, fmin, tpe
-from numpy.random import RandomState
-from sklearn.metrics import mean_squared_error
-
-# 注意，该数据集是最初始的数据集
-train = pd.read_csv('data/train.csv')
-test =  pd.read_csv('data/test.csv')
-merchant = pd.read_csv('data/merchants.csv')
-new_transaction = pd.read_csv('data/new_merchant_transactions.csv')
-history_transaction = pd.read_csv('data/historical_transactions.csv')
-transaction = pd.concat([new_transaction, history_transaction], axis=0, ignore_index=True)
-del new_transaction
-del history_transaction
-gc.collect()
-
 """
 NLP特征衍生
 首先我们注意到，在数据集中存在大量的ID相关的列（除了card_id外），包括'merchant_id'、'merchant_category_id'、'state_id'、'subsector_id'、'city_id'等，
@@ -29,24 +6,41 @@ NLP特征衍生
 为了能够挖掘出类似信息，我们可以考虑采用NLP中CountVector和TF-IDF两种方法来进行进一步特征衍生，其中CountVector可以挖掘类似某用户钟爱某商铺的信息，
 而TF-IDF则可进一步挖掘出类似某用户的喜好是否普遍或一致等信息。
 """
+import gc
+import pandas as pd
+from scipy import sparse
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+
+# 注意，该数据集是最初始的数据集
+train = pd.read_csv('data/train.csv')
+test = pd.read_csv('data/test.csv')
+merchant = pd.read_csv('data/merchants.csv')
+new_transaction = pd.read_csv('data/new_merchant_transactions.csv')
+history_transaction = pd.read_csv('data/historical_transactions.csv')
+transaction = pd.concat([new_transaction, history_transaction], axis=0, ignore_index=True)
+del new_transaction
+del history_transaction
+gc.collect()
 
 nlp_features = ['merchant_id', 'merchant_category_id', 'state_id', 'subsector_id', 'city_id']
 
 for co in nlp_features:
     print(co)
     transaction[co] = transaction[co].astype(str)
-    temp = transaction[transaction['month_lag']>=0].groupby("card_id")[co].apply(list).apply(lambda x:' '.join(x)).reset_index()
-    temp.columns = ['card_id', co+'_new']
+    temp = transaction[transaction['month_lag'] >= 0].groupby("card_id")[co].apply(list).apply(
+        lambda x: ' '.join(x)).reset_index()
+    temp.columns = ['card_id', co + '_new']
     train = pd.merge(train, temp, how='left', on='card_id')
     test = pd.merge(test, temp, how='left', on='card_id')
 
-    temp = transaction[transaction['month_lag']<0].groupby("card_id")[co].apply(list).apply(lambda x:' '.join(x)).reset_index()
-    temp.columns = ['card_id', co+'_hist']
+    temp = transaction[transaction['month_lag'] < 0].groupby("card_id")[co].apply(list).apply(
+        lambda x: ' '.join(x)).reset_index()
+    temp.columns = ['card_id', co + '_hist']
     train = pd.merge(train, temp, how='left', on='card_id')
     test = pd.merge(test, temp, how='left', on='card_id')
 
-    temp = transaction.groupby("card_id")[co].apply(list).apply(lambda x:' '.join(x)).reset_index()
-    temp.columns = ['card_id', co+'_all']
+    temp = transaction.groupby("card_id")[co].apply(list).apply(lambda x: ' '.join(x)).reset_index()
+    temp.columns = ['card_id', co + '_all']
     train = pd.merge(train, temp, how='left', on='card_id').fillna("-1")
     test = pd.merge(test, temp, how='left', on='card_id').fillna("-1")
 

@@ -4,17 +4,16 @@
 其数据为交易数据以card_id进行groupby并最终提取出purchase_day/month并进行差分的结果。
 """
 import gc
-import time
 import numpy as np
 import pandas as pd
 from datetime import datetime
-
 
 train = pd.read_csv('data/train.csv')
 test = pd.read_csv('data/test.csv')
 merchant = pd.read_csv('data/merchants.csv')
 new_transaction = pd.read_csv('data/new_merchant_transactions.csv')
 history_transaction = pd.read_csv('data/historical_transactions.csv')
+
 
 # 字典编码函数
 def change_object_cols(se):
@@ -77,10 +76,10 @@ del history_transaction
 gc.collect()
 
 # 2、同样划分离散字段、连续字段以及时间字段。
-numeric_cols = [ 'installments', 'month_lag', 'purchase_amount']
+numeric_cols = ['installments', 'month_lag', 'purchase_amount']
 category_cols = ['authorized_flag', 'card_id', 'city_id', 'category_1',
-       'category_3', 'merchant_category_id', 'merchant_id', 'category_2', 'state_id',
-       'subsector_id']
+                 'category_3', 'merchant_category_id', 'merchant_id', 'category_2', 'state_id',
+                 'subsector_id']
 time_cols = ['purchase_date']
 
 # 3、可仿照merchant的处理方式对字符型的离散特征进行字典序编码以及缺失值填充。
@@ -91,11 +90,12 @@ transaction['category_2'] = transaction['category_2'].astype(int)
 
 # 4、进行时间段的处理，简单起见进行月份、日期的星期数（工作日与周末）、以及
 # 时间段（上午、下午、晚上、凌晨）的信息提取。
-transaction['purchase_month'] = transaction['purchase_date'].apply(lambda x:'-'.join(x.split(' ')[0].split('-')[:2]))
-transaction['purchase_hour_section'] = transaction['purchase_date'].apply(lambda x: x.split(' ')[1].split(':')[0]).astype(int)//6
-transaction['purchase_day'] = transaction['purchase_date'].apply(lambda x: datetime.strptime(x.split(" ")[0], "%Y-%m-%d").weekday())//5
+transaction['purchase_month'] = transaction['purchase_date'].apply(lambda x: '-'.join(x.split(' ')[0].split('-')[:2]))
+transaction['purchase_hour_section'] = transaction['purchase_date'].apply(
+    lambda x: x.split(' ')[1].split(':')[0]).astype(int) // 6
+transaction['purchase_day'] = transaction['purchase_date'].apply(
+    lambda x: datetime.strptime(x.split(" ")[0], "%Y-%m-%d").weekday()) // 5
 del transaction['purchase_date']
-
 
 # 5、对新生成的购买月份离散字段进行字典序编码。
 transaction['purchase_month'] = change_object_cols(transaction['purchase_month'].fillna(-1).astype(str))
@@ -106,7 +106,7 @@ transaction = pd.merge(transaction, merchant[cols], how='left', on='merchant_id'
 numeric_cols = ['purchase_amount', 'installments']
 
 category_cols = ['authorized_flag', 'city_id', 'category_1',
-       'category_3', 'merchant_category_id','month_lag','most_recent_sales_range',
+                 'category_3', 'merchant_category_id', 'month_lag', 'most_recent_sales_range',
                  'most_recent_purchases_range', 'category_4',
                  'purchase_month', 'purchase_hour_section', 'purchase_day']
 
