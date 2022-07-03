@@ -1,27 +1,15 @@
+import time
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from tqdm import tqdm, tqdm_notebook
 import lightgbm as lgb
 import xgboost as xgb
-from catboost import CatBoostRegressor
 from catboost import CatBoostClassifier
-from sklearn.linear_model import Ridge, RidgeCV
-from sklearn.linear_model import BayesianRidge
 from catboost import CatBoostRegressor
-from sklearn.model_selection import KFold, StratifiedKFold
-from scipy import sparse
-import warnings
-import time
-import sys
-import os
-import gc
-import datetime
-from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import KFold
 from sklearn.metrics import log_loss
+from sklearn.metrics import mean_squared_error
 
-
+# 导入新思路做特征衍生得到的数据
 train = pd.read_csv('./data/all_train_features.csv')
 test = pd.read_csv('./data/all_test_features.csv')
 
@@ -30,13 +18,13 @@ train[inf_cols] = train[inf_cols].replace(np.inf, train[inf_cols].replace(np.inf
 # ntrain[inf_cols] = ntrain[inf_cols].replace(np.inf, ntrain[inf_cols].replace(np.inf, -99).max().max())
 test[inf_cols] = test[inf_cols].replace(np.inf, test[inf_cols].replace(np.inf, -99).max().max())
 
-# ## load sparse
+# load sparse
 # train_tags = sparse.load_npz('train_tags.npz')
 # test_tags  = sparse.load_npz('test_tags.npz')
 
-## 获取非异常值的index
+# 获取非异常值的index
 normal_index = train[train['outliers'] == 0].index.tolist()
-## without outliers
+# without outliers
 ntrain = train[train['outliers'] == 0]
 
 target = train['target'].values
@@ -51,6 +39,7 @@ print('train:', train.shape)
 print('ntrain:', ntrain.shape)
 
 
+# 定义训练函数
 def train_model(X, X_test, y, params, folds, model_type='lgb', eval_type='regression'):
     oof = np.zeros(X.shape[0])
     predictions = np.zeros(X_test.shape[0])
@@ -103,7 +92,7 @@ def train_model(X, X_test, y, params, folds, model_type='lgb', eval_type='regres
     return oof, predictions, scores
 
 
-#### lgb
+# LightGBM
 lgb_params = {'num_leaves': 63,
               'min_data_in_leaf': 32,
               'objective': 'regression',
@@ -158,7 +147,7 @@ predictions_lgb.to_csv('./result/predictions_lgb.csv', header=False, index=False
 predictions_nlgb.to_csv('./result/predictions_nlgb.csv', header=False, index=False)
 predictions_blgb.to_csv('./result/predictions_blgb.csv', header=False, index=False)
 
-#### xgb
+# XGBoost
 xgb_params = {'eta': 0.05, 'max_leaves': 47, 'max_depth': 10, 'subsample': 0.8, 'colsample_bytree': 0.8,
               'min_child_weight': 40, 'max_bin': 128, 'reg_alpha': 2.0, 'reg_lambda': 2.0,
               'objective': 'reg:linear', 'eval_metric': 'rmse', 'silent': True, 'nthread': 4}
@@ -195,7 +184,7 @@ predictions_xgb.to_csv('./result/predictions_xgb.csv', header=False, index=False
 predictions_nxgb.to_csv('./result/predictions_nxgb.csv', header=False, index=False)
 predictions_bxgb.to_csv('./result/predictions_bxgb.csv', header=False, index=False)
 
-#### cat
+# CatBoost
 cat_params = {'learning_rate': 0.05, 'depth': 9, 'l2_leaf_reg': 10, 'bootstrap_type': 'Bernoulli',
               'od_type': 'Iter', 'od_wait': 50, 'random_seed': 11, 'allow_writing_files': False}
 folds = KFold(n_splits=5, shuffle=True, random_state=18)

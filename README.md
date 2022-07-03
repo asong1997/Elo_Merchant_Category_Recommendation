@@ -1,3 +1,14 @@
+### 比赛结果（得分越小越好）
+![image](image_output/score.png)
+因为比赛早就结束了，我们选择的是延迟提交。所以我们提交的结果虽然会打分，但是不会真正进入排行榜榜单。<br />
+公榜得分：3.67611<br />
+私榜得分：3.60352<br />
+![image](image_output/public_ranking.png)
+公榜排行：top4%<br />
+160/4110 = 0.038929440389294405<br />
+![image](image_output/private_ranking.png)
+私榜排行：top1%<br />
+34/4110 = 0.00827250608272506<br />
 ### 业务目标：更好的进行本地服务推荐
   在官方给出的说明中，我们不难发现，Elo使用机器学习算法技术的核心目的，是为了更
 好的在App内为用户推荐当地吃穿住行的商家服务，包括热门餐厅展示、优惠折扣提醒等 。也就是说，其根本目的是为了推荐，或者说为每个
@@ -86,7 +97,7 @@ LightGBM_XGBoost_CatBoost_Stacking(5.4).py：用优化后的特征，分别跑li
 
 推荐使用贝叶斯优化，相对来说又快又准。
 
-4.常用的特征衍生方法：
+4.常用的特征衍生方法：<br />
 
 ![image](image_output/feature_engineering.png)
 
